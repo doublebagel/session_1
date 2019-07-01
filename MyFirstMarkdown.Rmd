@@ -11,20 +11,41 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Download sleep study data
 
-```{r cars}
-summary(cars)
+``` {r}
+#library(readr)
+sleep<-read.csv("https://vincentarelbundock.github.io/Rdatasets/csv/lme4/sleepstudy.csv")
+head(sleep)
 ```
 
-## Including Plots
+plotting
 
-You can also embed plots, for example:
+``` {r}
+library(ggplot2)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+ggplot(sleep, aes(x= Days, y=Reaction))+
+  geom_point()+
+  geom_smooth()+
+  scale_x_continuous(breaks=seq(0, 8, by=2))+
+  facet_wrap(~Subject)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# getting the means per subject
+``` {r}
+library(dplyr)
+sleep %>% 
+  group_by(Subject) %>% 
+  summarise(mean(Reaction))
+```
+
+# meancentering reaction times, plotting to a single axis
+```{r}
+sleep %>% 
+  group_by(Subject) %>% 
+  mutate(mean_centered_reaction = Reaction - mean(Reaction)) %>% #mutate = create new var
+  ggplot(aes(x=Days,y=mean_centered_reaction, colour=factor(Subject)))+
+  geom_smooth(show.legend=FALSE,se=FALSE)+
+  scale_x_continuous(breaks=seq(0,8,by=2))
+```
